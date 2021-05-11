@@ -28,7 +28,6 @@ namespace itis {
         return pair.second;
       }
     }
-    return std::nullopt;
   }
 
   void HashTable::Put(int key, const std::string &value) {
