@@ -20,11 +20,13 @@ namespace itis {
     buckets_.resize(capacity);
   }
 
-  std::optional<std::string> HashTable::Search(int key) const {
+  std::optional<std::string> HashTable::Search(int key) const { //TODO
     auto index = hash(key);
     auto bucket = buckets_[index];
     for (auto pair : bucket){
-      if (pair.first == key) return pair.second;
+      if (pair.first == key) {
+        return pair.second;
+      }
     }
     return std::nullopt;
   }
@@ -33,7 +35,7 @@ namespace itis {
     // Tip 1: compute hash code (index) to determine which bucket to use
     // Tip 2: consider the case when the key exists (read the docs in the header file)
     auto index = hash(key);
-    for (auto pair : buckets_[index]){ // TODO что если нет такого бакета?
+    for (auto pair : buckets_[index]){
       if (pair.first == key) {
         pair.second = value;
         return;
@@ -61,7 +63,7 @@ namespace itis {
     }
   }
 
-  std::optional<std::string> HashTable::Remove(int key) {
+  std::optional<std::string> HashTable::Remove(int key) { //TODO
     // Tip 1: compute hash code (index) to determine which bucket to use
     // TIp 2: find the key-value pair to remove and make a copy of value to return
     auto index = hash(key);
@@ -78,6 +80,7 @@ namespace itis {
     }
     if (key_ == INT32_MAX) {
       buckets_[index].remove(std::pair(key_, val));
+      num_keys_ --;
       return val;
     }
     return std::nullopt;
