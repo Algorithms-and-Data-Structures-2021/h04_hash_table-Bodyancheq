@@ -17,24 +17,26 @@ namespace itis {
       throw std::logic_error("hash table load factor must be in range [0...1]");
     }
 
+    buckets_ = std::vector<Bucket>{};
     buckets_.resize(capacity);
   }
 
   std::optional<std::string> HashTable::Search(int key) const { //TODO
     auto index = hash(key);
     auto bucket = buckets_[index];
-    for (auto pair : bucket){
+    for (std::pair<int, std::string> pair: bucket){
       if (pair.first == key) {
         return pair.second;
       }
     }
+    return std::nullopt;
   }
 
   void HashTable::Put(int key, const std::string &value) {
     // Tip 1: compute hash code (index) to determine which bucket to use
     // Tip 2: consider the case when the key exists (read the docs in the header file)
     auto index = hash(key);
-    for (auto pair : buckets_[index]){
+    for (std::pair<int, std::string> &pair: buckets_[index]){
       if (pair.first == key) {
         pair.second = value;
         return;
@@ -46,19 +48,16 @@ namespace itis {
     if (static_cast<double>(num_keys_) / buckets_.size() >= load_factor_) {
       // Tip 3: recompute hash codes (indices) for key-value pairs (create a new hash-table)
       // Tip 4: use utils::hash(key, size) to compute new indices for key-value pairs
-      auto new_buckets = new std::vector<Bucket>[buckets_.size() + kGrowthCoefficient];
-      for (auto bucket : buckets_){
-        for (auto pair : bucket){
-          auto new_index = hash(pair.first);
-          new_buckets[new_index][0].push_back(pair);
+      std::vector<Bucket> new_buckets = std::vector<Bucket>{};
+      auto new_size = buckets_.size() * kGrowthCoefficient;
+      new_buckets.resize(new_size);
+      for (Bucket &bucket : buckets_){
+        for (std::pair<int, std::string> &pair : bucket){
+          auto new_index = utils::hash(pair.first, new_size);
+          new_buckets[new_index].push_back(pair);
         }
       }
-
-      buckets_.clear();
-      for (auto bucket : *new_buckets){
-        buckets_.push_back(bucket);
-      }
-      return;
+      buckets_ = new_buckets;
     }
   }
 
@@ -66,21 +65,12 @@ namespace itis {
     // Tip 1: compute hash code (index) to determine which bucket to use
     // TIp 2: find the key-value pair to remove and make a copy of value to return
     auto index = hash(key);
-    auto bucket = buckets_[index];
-
-    std::string val;
-    auto key_ = INT32_MAX;
-    for (auto pair : bucket){
-      if (pair.first == key){
-        val = pair.second;
-        key_ = pair.first;
-        break;
+    for(std::pair<int, std::string> &pair: buckets_[index]){
+      if (pair.first == key) {
+        std::string to_return = pair.second;
+        buckets_[index].remove(pair);
+        return to_return;
       }
-    }
-    if (key_ == INT32_MAX) {
-      buckets_[index].remove(std::pair(key_, val));
-      num_keys_ --;
-      return val;
     }
     return std::nullopt;
   }
